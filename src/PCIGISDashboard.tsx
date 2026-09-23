@@ -125,13 +125,7 @@ function hashCode(str: string) {
   return h;
 }
 
-function slugify(name: string) {
-  return name
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
+
 
 const stadiumIcon = L.divIcon({
   className: "",
