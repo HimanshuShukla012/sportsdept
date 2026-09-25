@@ -11,70 +11,101 @@ import {
   Play,
 } from "lucide-react";
 
-// Eagerly import every video under src/assets/videos/** as a resolved URL.
-// Keys look like: "/src/assets/videos/mrf/SBM VIDEO 2024.mp4"
-const videoModules = import.meta.glob("/src/assets/videos/**/*.mp4", {
-  eager: true,
-  import: "default",
-}) as Record<string, string>;
+// ---- Video data: Google Drive file IDs, grouped by category ----
+type VideoItem = { filename: string; id: string };
 
-// Group resolved URLs by folder name.
-function getVideosForFolder(folder: string) {
-  const prefix = `/src/assets/videos/${folder}/`;
-  return Object.entries(videoModules)
-    .filter(([path]) => path.startsWith(prefix))
-    .map(([path, url]) => ({
-      filename: decodeURIComponent(path.replace(prefix, "")),
-      url,
-    }));
+function driveThumbnail(id: string) {
+  return `https://drive.google.com/thumbnail?id=${id}&sz=w480`;
+}
+function drivePreviewEmbed(id: string) {
+  return `https://drive.google.com/file/d/${id}/preview`;
 }
 
-const CATEGORIES = [
+const CATEGORIES: {
+  key: string;
+  label: string;
+  icon: React.ComponentType<{ size?: number; color?: string }>;
+  videos: VideoItem[];
+}[] = [
   {
     key: "swm-plant",
     label: "Solid Waste Management Plant",
-    folder: "solid-waste-management-plant",
     icon: Factory,
+    videos: [
+      { filename: "Amrut 2.0 Final HD Video", id: "1ST3lPFoyEXV7m9CnTkyXe519LKhNwZWK" },
+      { filename: "Nagar Vikash video 12.03.24", id: "1Q-_utP6Jwa2j7V-TQHY2JkA_t--_GCOZ" },
+      { filename: "khana goshala yojana", id: "1goFkSERBNboVfKdMb7t4JUk7-MUQyl9-" },
+      { filename: "URTI Video", id: "15tlLiV8Z-VQ4X3DFBApo7RilyFn4Jso1" },
+    ],
   },
   {
     key: "mrf",
-    label: "Material Recovery Facility (MRF)",
-    folder: "mrf",
+    label: "MRF",
     icon: Recycle,
+    videos: [{ filename: "SBM VIDEO 2024", id: "1-3maxbYQHHGyPZm_u0wSar8wVb8bIGVb" }],
   },
   {
     key: "iec-campaign",
     label: "IEC Campaign",
-    folder: "iec-campaign",
     icon: Megaphone,
+    videos: [
+      { filename: "Gauarav Khanna", id: "1b5H4wIvZAZVkf6MxkVum94wgEW7-Wlg-" },
+      { filename: "SBM VIDEO 2024", id: "1-3maxbYQHHGyPZm_u0wSar8wVb8bIGVb" },
+      { filename: "SHS 2026 Campaign", id: "1qNzHDdAeztfIMsP1KqYBkXf9e2IxYflE" },
+      { filename: "26 january 2026 2", id: "1gaDPPw-e_H68yBVuCJaxmsJLGnnQjR7I" },
+      { filename: "Har Ghar Tiranga_2", id: "1LZWGzfFGOAgoy8Quvci8oRIfkQC7HlI8" },
+      {
+        filename: "Naya Sankalp Hai' Swachh Bharat Mission Anthem 2024",
+        id: "1uBiSiSjN-2QDzuu-2T3wRnvRHfyti0OR",
+      },
+      { filename: "SWACHHATA HE SEVA 2026 New video", id: "1h_kLgzdTSVwCJiTrgMlf4sfsRM_421J4" },
+    ],
   },
   {
     key: "swachh-saarthi",
     label: "Swachh Saarthi Clubs",
-    folder: "swachh-saarthi-clubs",
     icon: Users,
+    videos: [],
   },
   {
     key: "udd-speech",
     label: "UDD Minister Sir Speech",
-    folder: "udd-minister-sir-speech",
     icon: Mic,
+    videos: [
+      { filename: "MANTRI ji SHS byte", id: "1kK_SagfVtWcpP7XelADt4xwbcnVQvp9K" },
+      { filename: "Mantri JI SSclub video 2", id: "1b_2-9AhI0GxQSddRgPS-DC4lx6qyNUWd" },
+      { filename: "Mantri ji ULB video", id: "1HQt-9GyXPGcNFiYL3m1_cxQN9asCreFP" },
+    ],
   },
   {
     key: "swachh-talks",
     label: "Swachh Talks",
-    folder: "swachh-talks",
     icon: MessageCircle,
+    videos: [
+      {
+        filename:
+          "🧹 एक दिन, एक घंटा, एक साथ! 🇮🇳स्वच्छता ही सेवा 2026 के अंतर्गत 'सेवा ही संकल्प' अभियान के तहत",
+        id: "1d92v-KR2BnsNP05peaLjmQQeWqCiA5j-",
+      },
+      { filename: "Ayodhiya SHS 2026", id: "18AUd1j4Oj3iSZGk5sffwHfe7LEf0r_gJ" },
+      { filename: "SAKTI RASOI FILM SUDA", id: "1I6IagZ-qIUqX0MLbCCQDB4mrE8Gronu-" },
+      { filename: "SHS 2026 2", id: "1Wp7V61qeOjrq4tAqioy_dIJBITZr0NRP" },
+      { filename: "SHS 2026 3", id: "1_Rl992OCX04bNkpOgVOWZ_EsoBWBxpUg" },
+      { filename: "SHS 2026 4", id: "1X6sE-HZXSCP2DFpPoHr0S0BSejhVPEMv" },
+      { filename: "SHS 2026 5", id: "1ze607MtOlCzg57iC0-sP_-IRLMdk57hi" },
+    ],
   },
   {
     key: "plastic-campaign",
     label: "Plastic Campaign",
-    folder: "plastic-campaign",
     icon: Trash2,
+    videos: [
+      { filename: "SEGREGATE", id: "1S_EgH-FsYXLT7C8TUl1QUiN_DXHnDUIQ" },
+      { filename: "SWM Segregation", id: "1YspjE7l7tmesBh9RXSynbJ8vOVBY8WHx" },
+    ],
   },
-].map((cat) => ({ ...cat, videos: getVideosForFolder(cat.folder) }));
+];
 
-type VideoItem = { filename: string; url: string };
 type Category = (typeof CATEGORIES)[number];
 
 function VideoThumbnail({
@@ -85,6 +116,7 @@ function VideoThumbnail({
   onClick: () => void;
 }) {
   const [hovered, setHovered] = useState(false);
+  const [imgFailed, setImgFailed] = useState(false);
 
   return (
     <button
@@ -113,26 +145,34 @@ function VideoThumbnail({
           background: "#000",
         }}
       >
-        <video
-          src={video.url}
-          muted
-          preload="metadata"
-          onLoadedMetadata={(e) => {
-            try {
-              e.currentTarget.currentTime = 0.5;
-            } catch {
-              /* no-op */
-            }
-          }}
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            display: "block",
-            transform: hovered ? "scale(1.05)" : "scale(1)",
-            transition: "transform 0.2s ease",
-          }}
-        />
+        {!imgFailed ? (
+          <img
+            src={driveThumbnail(video.id)}
+            alt={video.filename}
+            onError={() => setImgFailed(true)}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              display: "block",
+              transform: hovered ? "scale(1.05)" : "scale(1)",
+              transition: "transform 0.2s ease",
+            }}
+          />
+        ) : (
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "#222",
+            }}
+          >
+            <Play size={30} color="#888" />
+          </div>
+        )}
         <div
           style={{
             position: "absolute",
@@ -168,7 +208,7 @@ function VideoThumbnail({
           textAlign: "center",
         }}
       >
-        {video.filename.replace(/\.mp4$/i, "")}
+        {video.filename}
       </span>
     </button>
   );
@@ -322,7 +362,7 @@ export default function SwachhBharatVideoHub() {
         })}
       </div>
 
-      {/* Category popup: real video previews */}
+      {/* Category popup: Drive thumbnails */}
       {activeCategory && !activeVideo && (
         <div
           onClick={closeAll}
@@ -369,7 +409,7 @@ export default function SwachhBharatVideoHub() {
             </h2>
 
             {activeCategory.videos.length === 0 ? (
-              <p style={{ color: "#8a6a4a" }}>No videos found in this folder yet.</p>
+              <p style={{ color: "#8a6a4a" }}>No videos found in this category yet.</p>
             ) : (
               <div
                 style={{
@@ -378,9 +418,9 @@ export default function SwachhBharatVideoHub() {
                   gap: "22px",
                 }}
               >
-                {activeCategory.videos.map((video) => (
+                {activeCategory.videos.map((video, i) => (
                   <VideoThumbnail
-                    key={video.url}
+                    key={`${video.id}-${i}`}
                     video={video}
                     onClick={() => setActiveVideo(video)}
                   />
@@ -391,7 +431,7 @@ export default function SwachhBharatVideoHub() {
         </div>
       )}
 
-      {/* Fullscreen video player */}
+      {/* Fullscreen video player via Drive embed */}
       {activeVideo && (
         <div
           style={{
@@ -425,16 +465,17 @@ export default function SwachhBharatVideoHub() {
             <X size={26} color="#fff" />
           </button>
 
-          <video
-            key={activeVideo.url}
-            src={activeVideo.url}
-            controls
-            autoPlay
+          <iframe
+            key={activeVideo.id}
+            src={drivePreviewEmbed(activeVideo.id)}
+            allow="autoplay; fullscreen"
+            allowFullScreen
             style={{
               width: "100%",
               height: "100%",
-              objectFit: "contain",
+              border: "none",
             }}
+            title={activeVideo.filename}
           />
         </div>
       )}
